@@ -9,8 +9,9 @@ def get_conversion_rate_usd_to_nis():
     if not api_key:
         print("Error: CURRENCY_API_KEY environment variable not set")
         exit(1)
-    url = f"https://api.freecurrencyapi.com/v1/latest?apikey={api_key}"
-    resp = requests.get(url)
+    url = "https://api.freecurrencyapi.com/v1/latest"
+    headers = {"apikey": api_key}
+    resp = requests.get(url, headers=headers)
     if resp.status_code != 200:
         print("error fetching conversion rate from api...")
         exit(1)
