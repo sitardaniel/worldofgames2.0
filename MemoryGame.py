@@ -1,4 +1,5 @@
 import os
+import subprocess
 import random
 from time import sleep
 
@@ -29,6 +30,7 @@ def play(difficulty):
     list_of_num = generate_sequence(difficulty)
     print(list_of_num)
     sleep(0.7)
-    os.system("cls") # for windows only
+    cmd = 'cls' if os.name == 'nt' else 'clear'
+    subprocess.run(cmd, shell=True, check=False)
     list_of_unum = get_list_from_user(difficulty)
     return is_list_equal(list_of_num, list_of_unum)

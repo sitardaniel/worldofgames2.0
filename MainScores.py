@@ -18,17 +18,17 @@ def score_server():
         </body>
         </html>
         """
-    except Exception as e:
-        return f"""
+    except Exception:
+        return """
         <html>
         <head>
         <title>Scores Game</title>
         </head>
         <body>
-        <h1><div id="score" style="color:red">{str(e)}</div></h1>
+        <h1><div id="score" style="color:red">Error: Unable to retrieve score</div></h1>
         </body>
         </html>
-        """
+        """, 500
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0')
