@@ -1,10 +1,15 @@
 import random
 import requests
 import json
+import os
 
 
 def get_conversion_rate_usd_to_nis():
-    url = "https://api.freecurrencyapi.com/v1/latest?apikey=8MvokA3LxaytpwXUpxIZinVgKBE5fjbH7Sk94uoC"
+    api_key = os.environ.get("CURRENCY_API_KEY")
+    if not api_key:
+        print("Error: CURRENCY_API_KEY environment variable not set")
+        exit(1)
+    url = f"https://api.freecurrencyapi.com/v1/latest?apikey={api_key}"
     resp = requests.get(url)
     if resp.status_code != 200:
         print("error fetching conversion rate from api...")
