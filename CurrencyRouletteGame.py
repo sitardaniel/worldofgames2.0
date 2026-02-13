@@ -24,8 +24,12 @@ def get_money_interval(d, t):
 
 
 def get_guess_from_user(amount_of_usd):
-    guessed_ils_price = float(input(f"please enter expected value in ILS of {amount_of_usd} USD"))
-    return guessed_ils_price
+    while True:
+        try:
+            guessed_ils_price = float(input(f"Please enter expected value in ILS of {amount_of_usd} USD: "))
+            return guessed_ils_price
+        except ValueError:
+            print("Invalid input. Please enter a number.")
 
 
 def play(difficulty):

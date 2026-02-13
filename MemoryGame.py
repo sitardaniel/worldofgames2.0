@@ -14,7 +14,13 @@ def generate_sequence(difficulty):
 def get_list_from_user(difficulty):
     list_of_unum = []
     for i in range(difficulty):
-        list_of_unum.append(input("Please enter a number:"))
+        while True:
+            try:
+                num = int(input(f"Please enter number {i + 1}: "))
+                list_of_unum.append(num)
+                break
+            except ValueError:
+                print("Invalid input. Please enter a number.")
     return list_of_unum
 
 
