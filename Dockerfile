@@ -1,32 +1,45 @@
-FROM python:3.9
-#ADD e2e.py /
-#COPY Scores.txt /Scores.txt
-#RUN pip install --no-cache-dir -r requirements.tx# Use the official Python base image
-#CMD ["python", "app.py"]
+# Stage 1: Build stage
+FROM python:3.11-slim as builder
 
-
-# Set the working directory in the container
 WORKDIR /app
 
-# Copy the requirements file to the container
-# COPY requirements.txt .
+# Install build dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc \
+    && rm -rf /var/lib/apt/lists/*
 
-# Upgrade pip to the latest version
-RUN python -m pip install --upgrade pip
+# Copy and install requirements
+COPY requirements.txt .
+RUN pip wheel --no-cache-dir --no-deps --wheel-dir /app/wheels -r requirements.txt
 
-# Install project dependencies
-RUN pip install flask requests
+# Stage 2: Production stage
+FROM python:3.11-slim as production
 
-# Copy the Flask project files to the container
-COPY . .
+# Create non-root user for security
+RUN groupadd --gid 1000 appgroup && \
+    useradd --uid 1000 --gid appgroup --shell /bin/bash --create-home appuser
 
-# Set the environment variables if needed
-# ENV VARIABLE_NAME value
+WORKDIR /app
 
-# Expose the port the Flask app will run on
+# Copy wheels from builder stage
+COPY --from=builder /app/wheels /wheels
+COPY --from=builder /app/requirements.txt .
+
+# Install dependencies from wheels
+RUN pip install --no-cache /wheels/*
+
+# Copy application code
+COPY --chown=appuser:appgroup . .
+
+# Switch to non-root user
+USER appuser
+
+# Expose port
 EXPOSE 5000
 
-# Set the command to run the Flask app
-CMD ["python", "MainScores.py"]
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:5000/health')" || exit 1
 
-
+# Run with gunicorn for production
+CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--workers", "2", "--access-logfile", "-", "MainScores:app"]

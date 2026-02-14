@@ -1,0 +1,31 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: worldofgames
+  labels:
+    app: worldofgames
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: 5000
+      protocol: TCP
+      name: http
+  selector:
+    app: worldofgames
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: worldofgames-metrics
+  labels:
+    app: worldofgames
+spec:
+  type: ClusterIP
+  ports:
+    - port: 5000
+      targetPort: 5000
+      protocol: TCP
+      name: metrics
+  selector:
+    app: worldofgames

@@ -1,0 +1,69 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: worldofgames
+  labels:
+    app: worldofgames
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: worldofgames
+  template:
+    metadata:
+      labels:
+        app: worldofgames
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "5000"
+        prometheus.io/path: "/metrics"
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+      containers:
+        - name: worldofgames
+          image: sitardaniel/worldofgames:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 5000
+              protocol: TCP
+          env:
+            - name: CURRENCY_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: worldofgames-secrets
+                  key: currency-api-key
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "100m"
+            limits:
+              memory: "128Mi"
+              cpu: "500m"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 5000
+            initialDelaySeconds: 10
+            periodSeconds: 15
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 5000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+          volumeMounts:
+            - name: scores-volume
+              mountPath: /app/Scores.txt
+              subPath: Scores.txt
+      volumes:
+        - name: scores-volume
+          persistentVolumeClaim:
+            claimName: worldofgames-pvc
